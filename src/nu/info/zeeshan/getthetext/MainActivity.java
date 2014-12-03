@@ -6,6 +6,9 @@ import java.net.Socket;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +27,7 @@ public class MainActivity extends Activity {
 	static Socket s;
 	static BufferedReader br;
 	static boolean connected;
+	SharedPreferences spf;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -32,6 +36,7 @@ public class MainActivity extends Activity {
 			getFragmentManager().beginTransaction()
 					.add(R.id.container, new PlaceholderFragment()).commit();
 		}
+		spf=getSharedPreferences(getString(R.string.pref_filename), Context.MODE_PRIVATE);
 		
 	}
 	
@@ -49,6 +54,8 @@ public class MainActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
+			Intent intent=new Intent(this,SettingsActivity.class);
+			startActivity(intent);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -62,7 +69,7 @@ public class MainActivity extends Activity {
 			@Override
 			protected Void doInBackground(Void... params) {
 				try{
-					s=new Socket("192.168.0.100",23456);
+					s=new Socket(spf.getString(getString(R.string.pref_ip), "127.0.0.1"),23456);
 					br=new BufferedReader(new InputStreamReader(s.getInputStream()));
 					}catch(Exception e){
 						Log.d(TAG,"socket failed"+e);

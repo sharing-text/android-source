@@ -4,5 +4,15 @@
     <string name="app_name">GetTheText</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-
+    
+    <string name="btn_action_connect">Connect</string>
+    <string name="btn_action_disconnect">Disconnect</string>
+    <string name="btn_action_clear">Clear</string>
+    
+    <string name="pref_ip_title">IP Address</string>
+    <string name="pref_ip_desc">Enter the IP Address of your PC</string>
+    <string name="pref_port_desc">Enter the desired port number must be non-standard and >1024</string>
+    <string name="pref_ip">ip_address</string>
+	<string name="pref_port">port_number</string>
+	<string name="pref_filename">nu.info.zeeshan.getthetext</string>
 </resources>
