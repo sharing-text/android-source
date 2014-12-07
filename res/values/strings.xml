@@ -5,9 +5,10 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     
-    <string name="btn_action_connect">Connect</string>
-    <string name="btn_action_disconnect">Disconnect</string>
-    <string name="btn_action_clear">Clear</string>
+    <string name="btn_action_connection">Connect or Disconnect</string>
+    <string name="btn_action_clear">Clear Text</string>
+    <string name="btn_action_send">Send Text</string>
+    <string name="btn_action_copy">Copy Text</string>
     
     <string name="pref_ip_title">IP Address</string>
     <string name="pref_ip_desc">Enter the IP Address of your PC</string>
@@ -15,4 +16,8 @@
     <string name="pref_ip">ip_address</string>
 	<string name="pref_port">port_number</string>
 	<string name="pref_filename">nu.info.zeeshan.getthetext</string>
+	
+	<string name="toast_textcopied">Text copied!</string>
+	<string name="toast_notext">No text to copy!</string>
+	<string name="toast_disconnected">Connection Terminated!</string>
 </resources>

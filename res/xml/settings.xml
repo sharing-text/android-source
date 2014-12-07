@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:title="@string/action_settings"
      >
     <EditTextPreference
         android:title="@string/pref_ip_title"
         android:key="@string/pref_ip"
         android:summary="@string/pref_ip_desc"
+        android:digits="1234567890."
         ></EditTextPreference>
 
 </PreferenceScreen>

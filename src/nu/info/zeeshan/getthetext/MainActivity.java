@@ -2,13 +2,17 @@ package nu.info.zeeshan.getthetext;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,17 +21,22 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
-	public static String TAG="nu.info.zeeshan.getthetext.MainActivity";
+	public static String TAG = "nu.info.zeeshan.getthetext.MainActivity";
 	public static EditText text;
-	public static Button cbutton;
+	public static ImageButton cbutton;
+	public static ImageButton sbutton;
 	static Socket s;
 	static BufferedReader br;
+	static PrintWriter output;
 	static boolean connected;
+	static Context context;
 	SharedPreferences spf;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -36,10 +45,11 @@ public class MainActivity extends Activity {
 			getFragmentManager().beginTransaction()
 					.add(R.id.container, new PlaceholderFragment()).commit();
 		}
-		spf=getSharedPreferences(getString(R.string.pref_filename), Context.MODE_PRIVATE);
-		
+		spf = getSharedPreferences(getString(R.string.pref_filename),
+				Context.MODE_PRIVATE);
+		context = getApplicationContext();
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -54,78 +64,119 @@ public class MainActivity extends Activity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
 		if (id == R.id.action_settings) {
-			Intent intent=new Intent(this,SettingsActivity.class);
+			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
+
 	@Override
-	public void onStart(){
+	public void onStart() {
 		super.onStart();
 	}
-	public class Connect extends AsyncTask<Void, Void, Void>{
-		
-			@Override
-			protected Void doInBackground(Void... params) {
-				try{
-					s=new Socket(spf.getString(getString(R.string.pref_ip), "127.0.0.1"),23456);
-					br=new BufferedReader(new InputStreamReader(s.getInputStream()));
-					}catch(Exception e){
-						Log.d(TAG,"socket failed"+e);
-					}
-				return null;
+
+	public class Connect extends AsyncTask<Void, Void, Void> {
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			try {
+				s = new Socket(spf.getString(getString(R.string.pref_ip),
+						"127.0.0.1"), 23456);
+				br = new BufferedReader(new InputStreamReader(
+						s.getInputStream()));
+				output = new PrintWriter(s.getOutputStream(), true);
+			} catch (Exception e) {
+				Log.d(TAG, "socket failed" + e);
 			}
-			protected void onPostExecute(Void result) {
-				cbutton.setText("Disconnect");
-				getData gt=new getData();
-				 gt.execute();
-				 connected=true;
-			};
+			return null;
+		}
+
+		protected void onPostExecute(Void result) {
+			cbutton.setImageDrawable(context.getResources().getDrawable(
+					R.drawable.ic_connected_b));// ("Disconnect");
+			sbutton.setEnabled(true);
+			getData gt = new getData();
+			gt.execute();
+			connected = true;
+		};
 	}
-	public void disconnect(){
-		try{
+
+	public static void disconnect() {
+		try {
 			s.close();
-			connected=false;
-			cbutton.setText("Connect");
-			
-		}catch(Exception e){
-			Log.d(TAG,"cannot close s "+e);
+			connected = false;
+			sbutton.setEnabled(false);
+			cbutton.setImageDrawable(context.getResources().getDrawable(
+					R.drawable.ic_disconnected_b));// ("Connect");
+			Toast.makeText(context, context.getString(R.string.toast_disconnected), Toast.LENGTH_SHORT).show();
+		} catch (Exception e) {
+			Log.d(TAG, "cannot close s " + e);
 		}
-		
+
 	}
-	public void setConnection(View view){
-		if(connected){
+
+	public void setConnection(View view) {
+		if (connected) {
 			disconnect();
-		}
-		else{
+		} else {
 			new Connect().execute();
 		}
-		
+
 	}
-	public void clearText(View view){
+
+	public void copyText(View view) {
+		String msg = text.getText().toString().trim();
+		if (msg.length() > 0) {
+			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+			ClipData data = ClipData.newPlainText("Text from PC", msg);
+			clipboard.setPrimaryClip(data);
+			Toast.makeText(getApplicationContext(),
+					getString(R.string.toast_textcopied), Toast.LENGTH_SHORT)
+					.show();
+		} else {
+			Toast.makeText(getApplicationContext(),
+					getString(R.string.toast_notext), Toast.LENGTH_SHORT)
+					.show();
+		}
+	}
+
+	public void sendText(View view) {
+		output.println(text.getText().toString());
+	}
+
+	public void clearText(View view) {
 		text.getText().clear();
 	}
-	static class getData extends AsyncTask<Void, String, String>{
+
+	static class getData extends AsyncTask<Void, String, String> {
 
 		@Override
 		protected String doInBackground(Void... params) {
 			String str = null;
-			try{
-				while(true){
-					str=br.readLine();
+			try {
+				while ((str = br.readLine()) != null) {
 					publishProgress(str);
 				}
-			}catch(Exception e){
-				Log.d(TAG,"do in back"+e);
+				Log.d(TAG, "done in background finished");
+			} catch (Exception e) {
+				Log.d(TAG, "do in back " + e);
 			}
 			return str;
 		}
+
 		@Override
 		protected void onProgressUpdate(String... values) {
-			text.getText().append(values[0]+"\n");
+			text.setText(values[0]);
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			disconnect();
+
 		}
 	}
+
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
@@ -135,11 +186,12 @@ public class MainActivity extends Activity {
 				Bundle savedInstanceState) {
 			View rootView = inflater.inflate(R.layout.fragment_main, container,
 					false);
-			text=(EditText)rootView.findViewById(R.id.editTextReceived);
-			cbutton=(Button)rootView.findViewById(R.id.buttonCon);
-			
+			text = (EditText) rootView.findViewById(R.id.editTextReceived);
+			cbutton = (ImageButton) rootView.findViewById(R.id.buttonCon);
+			sbutton = (ImageButton) rootView.findViewById(R.id.buttonSend);
+			sbutton.setEnabled(false);
 			return rootView;
 		}
 	}
-	
+
 }

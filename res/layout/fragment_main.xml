@@ -12,7 +12,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
-
             <EditText
                 android:id="@+id/editTextReceived"
                 android:layout_width="match_parent"
@@ -26,22 +25,44 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
 
-                <Button
+                <ImageButton
+                    android:id="@+id/buttonSend"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.25"
+                    android:background="@null"
+                    android:onClick="sendText"
+                    android:src="@drawable/ic_send_b"
+                    android:contentDescription="@string/btn_action_send" />
+
+                <ImageButton
                     android:id="@+id/buttonClear"
                     android:layout_width="0dp"
+                    android:layout_weight="0.25"
                     android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
+                    android:background="@null"
                     android:onClick="clearText"
-                    android:text="Clear" />
+                    android:src="@drawable/ic_delete_b"
+                    android:contentDescription="@string/btn_action_clear" />
 
-                <Button
+                <ImageButton
                     android:id="@+id/buttonCon"
                     android:layout_width="0dp"
-                    android:layout_weight="0.5"
+                    android:layout_weight="0.25"
                     android:layout_height="wrap_content"
+                    android:background="@null"
                     android:onClick="setConnection"
-                    android:text="Connect" />
-
+                    android:src="@drawable/ic_disconnected_b"
+                    android:contentDescription="@string/btn_action_connection" />
+                <ImageButton
+                    android:id="@+id/buttonCopy"
+                    android:layout_width="0dp"
+                    android:layout_weight="0.25"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:onClick="copyText"
+                    android:src="@drawable/ic_copy_b"
+                    android:contentDescription="@string/btn_action_copy" />
             </LinearLayout>
 
         </LinearLayout>
