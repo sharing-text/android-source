@@ -20,4 +20,6 @@
 	<string name="toast_textcopied">Text copied!</string>
 	<string name="toast_notext">No text to copy!</string>
 	<string name="toast_disconnected">Connection Terminated!</string>
+	
+	<string name="edittext_msg">Your text here</string>
 </resources>

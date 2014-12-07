@@ -109,7 +109,9 @@ public class MainActivity extends Activity {
 			sbutton.setEnabled(false);
 			cbutton.setImageDrawable(context.getResources().getDrawable(
 					R.drawable.ic_disconnected_b));// ("Connect");
-			Toast.makeText(context, context.getString(R.string.toast_disconnected), Toast.LENGTH_SHORT).show();
+			Toast.makeText(context,
+					context.getString(R.string.toast_disconnected),
+					Toast.LENGTH_SHORT).show();
 		} catch (Exception e) {
 			Log.d(TAG, "cannot close s " + e);
 		}
@@ -142,7 +144,9 @@ public class MainActivity extends Activity {
 	}
 
 	public void sendText(View view) {
-		output.println(text.getText().toString());
+		String msg = text.getText().toString().trim();
+		if (msg.length() > 0)
+			output.println(msg);
 	}
 
 	public void clearText(View view) {
@@ -189,7 +193,14 @@ public class MainActivity extends Activity {
 			text = (EditText) rootView.findViewById(R.id.editTextReceived);
 			cbutton = (ImageButton) rootView.findViewById(R.id.buttonCon);
 			sbutton = (ImageButton) rootView.findViewById(R.id.buttonSend);
-			sbutton.setEnabled(false);
+			if (connected) {
+				cbutton.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_connected_b));
+				sbutton.setEnabled(true);
+			}
+			else{
+				cbutton.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_disconnected_b));
+				sbutton.setEnabled(false);
+			}
 			return rootView;
 		}
 	}
