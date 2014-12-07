@@ -12,7 +12,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,7 +35,7 @@ public class MainActivity extends Activity {
 	static boolean connected;
 	static Context context;
 	SharedPreferences spf;
-
+	static int PORT=23456;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -82,23 +81,30 @@ public class MainActivity extends Activity {
 		protected Void doInBackground(Void... params) {
 			try {
 				s = new Socket(spf.getString(getString(R.string.pref_ip),
-						"127.0.0.1"), 23456);
+						"127.0.0.1"), PORT);
 				br = new BufferedReader(new InputStreamReader(
 						s.getInputStream()));
 				output = new PrintWriter(s.getOutputStream(), true);
+				connected = true;
 			} catch (Exception e) {
 				Log.d(TAG, "socket failed" + e);
+				connected = false;
 			}
 			return null;
 		}
 
 		protected void onPostExecute(Void result) {
-			cbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_connected_b));// ("Disconnect");
-			sbutton.setEnabled(true);
-			getData gt = new getData();
-			gt.execute();
-			connected = true;
+			if (connected) {
+				cbutton.setImageDrawable(context.getResources().getDrawable(
+						R.drawable.ic_connected_b));// ("Disconnect");
+				sbutton.setEnabled(true);
+				sbutton.setImageDrawable(context.getResources().getDrawable(
+						R.drawable.ic_send_b));
+				getData gt = new getData();
+				gt.execute();
+			}
+			else
+				Toast.makeText(context, context.getString(R.string.toast_conn_error), Toast.LENGTH_LONG).show();
 		};
 	}
 
@@ -107,6 +113,8 @@ public class MainActivity extends Activity {
 			s.close();
 			connected = false;
 			sbutton.setEnabled(false);
+			sbutton.setImageDrawable(context.getResources().getDrawable(
+					R.drawable.ic_action_send_disable));
 			cbutton.setImageDrawable(context.getResources().getDrawable(
 					R.drawable.ic_disconnected_b));// ("Connect");
 			Toast.makeText(context,
@@ -145,8 +153,10 @@ public class MainActivity extends Activity {
 
 	public void sendText(View view) {
 		String msg = text.getText().toString().trim();
-		if (msg.length() > 0)
+		if (msg.length() > 0){
 			output.println(msg);
+			text.getText().clear();
+		}
 	}
 
 	public void clearText(View view) {
@@ -171,7 +181,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		protected void onProgressUpdate(String... values) {
-			text.setText(values[0]);
+			text.getText().append(values[0]+"\n");
 		}
 
 		@Override
@@ -194,11 +204,16 @@ public class MainActivity extends Activity {
 			cbutton = (ImageButton) rootView.findViewById(R.id.buttonCon);
 			sbutton = (ImageButton) rootView.findViewById(R.id.buttonSend);
 			if (connected) {
-				cbutton.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_connected_b));
+				cbutton.setImageDrawable(context.getResources().getDrawable(
+						R.drawable.ic_connected_b));
+				sbutton.setImageDrawable(context.getResources().getDrawable(
+						R.drawable.ic_send_b));
 				sbutton.setEnabled(true);
-			}
-			else{
-				cbutton.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_disconnected_b));
+			} else {
+				cbutton.setImageDrawable(context.getResources().getDrawable(
+						R.drawable.ic_disconnected_b));
+				sbutton.setImageDrawable(context.getResources().getDrawable(
+						R.drawable.ic_action_send_disable));
 				sbutton.setEnabled(false);
 			}
 			return rootView;
