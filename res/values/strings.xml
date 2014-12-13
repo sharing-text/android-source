@@ -2,28 +2,28 @@
 <resources>
 
     <string name="app_name">Get The Text</string>
-    
-    
     <string name="action_settings">Settings</string>
     <string name="action_info">Info</string>
-    
     <string name="btn_action_connection">Connect or Disconnect</string>
     <string name="btn_action_clear">Clear Text</string>
     <string name="btn_action_send">Send Text</string>
     <string name="btn_action_copy">Copy Text</string>
-    
-    <string name="pref_ip_title">IP Address</string>
-    <string name="pref_ip_desc">Enter the IP Address of your PC</string>
+    <string name="pref_ip_title">Server IP Address</string>
+    <string name="pref_port_title">Local Port</string>
+    <string name="pref_sport_title">Server Port</string>
+    <string name="pref_ip_desc">Enter the IP Address of Server</string>
+    <string name="pref_sport_desc">Enter the port number of server on which the service is running</string>
     <string name="pref_port_desc">Enter the desired port number must be non-standard and >1024</string>
     <string name="pref_ip">ip_address</string>
-	<string name="pref_port">port_number</string>
-	<string name="pref_filename">nu.info.zeeshan.getthetext</string>
-	
-	<string name="toast_textcopied">Text copied!</string>
-	<string name="toast_notext">No text to copy!</string>
-	<string name="toast_disconnected">Connection Terminated!</string>
-	<string name="toast_conn_error">Unable to Connect! Make sure you are connected to same network</string>
-	
-	<string name="edittext_msg">Your text here</string>
-	
+    <string name="pref_port">lport_number</string>
+    <string name="pref_sport">sport_number</string>
+    <string name="pref_filename">nu.info.zeeshan.getthetext</string>
+    <string name="toast_textcopied">Text copied!</string>
+    <string name="toast_notext">No text to copy!</string>
+    <string name="toast_disconnected">Connection Terminated!</string>
+    <string name="toast_conn_error">Unable to Connect! Make sure you are connected to same network</string>
+    <string name="edittext_msg">Your text here</string>
+    <string name="textviewlocal">Local: </string>
+    <string name="textviewserver">Server:</string>
+
 </resources>

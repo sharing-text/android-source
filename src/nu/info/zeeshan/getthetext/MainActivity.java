@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -15,34 +14,32 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	public static String TAG = "nu.info.zeeshan.getthetext.MainActivity";
-	public static EditText text;
-	public static ImageButton cbutton;
-	public static ImageButton sbutton;
+	// public static EditText text;
+	// public static ImageButton cbutton;
+	// public static ImageButton sbutton;
+	// public static TextView tserver;
+	// public static TextView tlocal;
 	static Socket s;
 	static BufferedReader br;
 	static PrintWriter output;
 	static boolean connected;
 	static Context context;
 	SharedPreferences spf;
-	static int PORT=23456;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment()).commit();
+					.add(R.id.container, new FragementMain()).commit();
 		}
 		spf = getSharedPreferences(getString(R.string.pref_filename),
 				Context.MODE_PRIVATE);
@@ -75,36 +72,44 @@ public class MainActivity extends Activity {
 		super.onStart();
 	}
 
-	public class Connect extends AsyncTask<Void, Void, Void> {
+	public class Connect extends AsyncTask<Void, Void, Boolean> {
 
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected Boolean doInBackground(Void... params) {
 			try {
-				s = new Socket(spf.getString(getString(R.string.pref_ip),
-						"127.0.0.1"), PORT);
-				br = new BufferedReader(new InputStreamReader(
-						s.getInputStream()));
-				output = new PrintWriter(s.getOutputStream(), true);
-				connected = true;
+				String sip = spf.getString(getString(R.string.pref_ip), null);
+				int port = spf.getInt(getString(R.string.pref_port), -1);
+				if (sip != null && port > 0) {
+					s = new Socket(sip, port);
+					br = new BufferedReader(new InputStreamReader(
+							s.getInputStream()));
+					output = new PrintWriter(s.getOutputStream(), true);
+					connected = true;
+					return true;
+				} else {
+					Log.d(TAG, "ip or port not set");
+					connected = false;
+					return false;
+				}
 			} catch (Exception e) {
 				Log.d(TAG, "socket failed" + e);
-				connected = false;
+				return false;
 			}
-			return null;
 		}
 
-		protected void onPostExecute(Void result) {
-			if (connected) {
-				cbutton.setImageDrawable(context.getResources().getDrawable(
-						R.drawable.ic_connected_b));// ("Disconnect");
-				sbutton.setEnabled(true);
-				sbutton.setImageDrawable(context.getResources().getDrawable(
-						R.drawable.ic_send_b));
+		protected void onPostExecute(Boolean result) {
+			if (result) {
+				FragementMain.holder.cbutton.setImageDrawable(context
+						.getResources().getDrawable(R.drawable.ic_connected_b));// ("Disconnect");
+				FragementMain.holder.sbutton.setEnabled(true);
+				FragementMain.holder.sbutton.setImageDrawable(context
+						.getResources().getDrawable(R.drawable.ic_send_b));
 				getData gt = new getData();
 				gt.execute();
-			}
-			else
-				Toast.makeText(context, context.getString(R.string.toast_conn_error), Toast.LENGTH_LONG).show();
+			} else
+				Toast.makeText(context,
+						context.getString(R.string.toast_conn_error),
+						Toast.LENGTH_LONG).show();
 		};
 	}
 
@@ -112,11 +117,12 @@ public class MainActivity extends Activity {
 		try {
 			s.close();
 			connected = false;
-			sbutton.setEnabled(false);
-			sbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_action_send_disable));
-			cbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_disconnected_b));// ("Connect");
+			FragementMain.holder.sbutton.setEnabled(false);
+			FragementMain.holder.sbutton.setImageDrawable(context
+					.getResources().getDrawable(
+							R.drawable.ic_action_send_disable));
+			FragementMain.holder.cbutton.setImageDrawable(context
+					.getResources().getDrawable(R.drawable.ic_disconnected_b));// ("Connect");
 			Toast.makeText(context,
 					context.getString(R.string.toast_disconnected),
 					Toast.LENGTH_SHORT).show();
@@ -136,7 +142,7 @@ public class MainActivity extends Activity {
 	}
 
 	public void copyText(View view) {
-		String msg = text.getText().toString().trim();
+		String msg = FragementMain.holder.text.getText().toString().trim();
 		if (msg.length() > 0) {
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 			ClipData data = ClipData.newPlainText("Text from PC", msg);
@@ -152,15 +158,15 @@ public class MainActivity extends Activity {
 	}
 
 	public void sendText(View view) {
-		String msg = text.getText().toString().trim();
-		if (msg.length() > 0){
+		String msg = FragementMain.holder.text.getText().toString().trim();
+		if (msg.length() > 0) {
 			output.println(msg);
-			text.getText().clear();
+			FragementMain.holder.text.getText().clear();
 		}
 	}
 
 	public void clearText(View view) {
-		text.getText().clear();
+		FragementMain.holder.text.getText().clear();
 	}
 
 	static class getData extends AsyncTask<Void, String, String> {
@@ -181,7 +187,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		protected void onProgressUpdate(String... values) {
-			text.getText().append(values[0]+"\n");
+			FragementMain.holder.text.getText().append(values[0] + "\n");
 		}
 
 		@Override
@@ -190,34 +196,32 @@ public class MainActivity extends Activity {
 
 		}
 	}
-
-	/**
-	 * A placeholder fragment containing a simple view.
+	/*
+	 * public class PlaceholderFragment extends Fragment {
+	 * 
+	 * @Override public View onCreateView(LayoutInflater inflater, ViewGroup
+	 * container, Bundle savedInstanceState) { View rootView =
+	 * inflater.inflate(R.layout.fragment_main, container, false); text =
+	 * (EditText) rootView.findViewById(R.id.editTextReceived); cbutton =
+	 * (ImageButton) rootView.findViewById(R.id.buttonCon); sbutton =
+	 * (ImageButton) rootView.findViewById(R.id.buttonSend); tlocal=(TextView)
+	 * rootView.findViewById(R.id.textViewLocal); tserver=(TextView)
+	 * rootView.findViewById(R.id.textViewServer); if (connected) {
+	 * cbutton.setImageDrawable(context.getResources().getDrawable(
+	 * R.drawable.ic_connected_b));
+	 * sbutton.setImageDrawable(context.getResources().getDrawable(
+	 * R.drawable.ic_send_b)); sbutton.setEnabled(true); } else {
+	 * cbutton.setImageDrawable(context.getResources().getDrawable(
+	 * R.drawable.ic_disconnected_b));
+	 * sbutton.setImageDrawable(context.getResources().getDrawable(
+	 * R.drawable.ic_action_send_disable)); sbutton.setEnabled(false); } return
+	 * rootView; }
+	 * 
+	 * @Override public void onStart(){ super.onStart();
+	 * tlocal.setText(getString
+	 * (R.string.textviewserver)+Utility.getIpAddress());
+	 * tserver.setText(getString
+	 * (R.string.textviewlocal)+spf.getString(getString(
+	 * R.string.pref_ip),null)); } }
 	 */
-	public static class PlaceholderFragment extends Fragment {
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container,
-					false);
-			text = (EditText) rootView.findViewById(R.id.editTextReceived);
-			cbutton = (ImageButton) rootView.findViewById(R.id.buttonCon);
-			sbutton = (ImageButton) rootView.findViewById(R.id.buttonSend);
-			if (connected) {
-				cbutton.setImageDrawable(context.getResources().getDrawable(
-						R.drawable.ic_connected_b));
-				sbutton.setImageDrawable(context.getResources().getDrawable(
-						R.drawable.ic_send_b));
-				sbutton.setEnabled(true);
-			} else {
-				cbutton.setImageDrawable(context.getResources().getDrawable(
-						R.drawable.ic_disconnected_b));
-				sbutton.setImageDrawable(context.getResources().getDrawable(
-						R.drawable.ic_action_send_disable));
-				sbutton.setEnabled(false);
-			}
-			return rootView;
-		}
-	}
-
 }
