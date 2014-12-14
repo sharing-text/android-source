@@ -1,13 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="nu.info.zeeshan.getthetext.MainActivity" >
-    <item 
-        android:id="@+id/action_info"
-        android:orderInCategory="100"
-        android:showAsAction="ifRoom"
-        android:title="@string/action_info"
-        android:icon="@drawable/ic_action_info_white"
-        />
+    
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
@@ -15,5 +9,18 @@
         android:title="@string/action_settings"
         android:icon="@drawable/ic_action_settings"
         />
-	
+	<item 
+        android:id="@+id/action_info"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="@string/action_info"
+        android:icon="@drawable/ic_action_info_white"
+        />
+	<item
+        android:id="@+id/action_server"
+        android:orderInCategory="100"
+        android:showAsAction="ifRoom"
+        android:title="@string/serverdown"
+        android:icon="@drawable/ic_action_start"
+        />
 </menu>

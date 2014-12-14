@@ -25,5 +25,12 @@
     <string name="edittext_msg">Your text here</string>
     <string name="textviewlocal">Local: </string>
     <string name="textviewserver">Server:</string>
+    <string name="porterror">Port not set</string>
+    <string name="invalidip">IP address is incorrect, Try another one</string>
+    <string name="invalidport">Port is incorrect, Try another one</string>
+    <string name="empty">That\'s nothing</string>
+    <string name="updating">Updating please wait</string>
+    <string name="serverup">Stop Server</string>
+    <string name="serverdown">Start Server</string>
 
 </resources>

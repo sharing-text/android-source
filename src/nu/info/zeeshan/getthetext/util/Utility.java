@@ -7,7 +7,9 @@ import java.util.Enumeration;
 
 import org.apache.http.conn.util.InetAddressUtils;
 
+import android.content.Context;
 import android.util.Log;
+import android.widget.Toast;
 
 public class Utility {
 	public static String TAG="nu.info.zeeshan.getthetext.util";
@@ -29,5 +31,8 @@ public class Utility {
 	   }
 	 public static void log(String TAG,String msg){
 		 Log.d(TAG,msg);
+	 }
+	 public static void toast(Context context,String msg,int duration){
+		 Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
 	 }
 }

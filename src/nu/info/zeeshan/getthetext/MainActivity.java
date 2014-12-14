@@ -1,10 +1,16 @@
 package nu.info.zeeshan.getthetext;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
+import nu.info.zeeshan.getthetext.FragementMain.SetIp;
+import nu.info.zeeshan.getthetext.util.Constants;
+import nu.info.zeeshan.getthetext.util.Utility;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -29,14 +35,26 @@ public class MainActivity extends Activity {
 	static Socket s;
 	static BufferedReader br;
 	static PrintWriter output;
-	static boolean connected;
+	static ArrayList<PrintWriter> clients_PWs;
+	static ArrayList<Socket> cSockets;
+	static int CLIENT_COUNT;
+	static boolean CONN_SERVER;
 	static Context context;
 	SharedPreferences spf;
+	public static boolean updating;
+	public static ServerSocket ss;
+	// public static Socket cs;
+	public static boolean CONN_CLIENT;
+	public static boolean serverup;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		if (clients_PWs == null)
+			clients_PWs = new ArrayList<PrintWriter>();
+		if(cSockets==null)
+			cSockets=new ArrayList<Socket>();
 		if (savedInstanceState == null) {
 			getFragmentManager().beginTransaction()
 					.add(R.id.container, new FragementMain()).commit();
@@ -58,37 +76,64 @@ public class MainActivity extends Activity {
 		// Handle action bar item clicks here. The action bar will
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
+		switch (item.getItemId()) {
+		case R.id.action_settings:
 			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
 			return true;
+		case R.id.action_server:
+			if (!serverup) {
+				startServer();
+				item.setTitle(getString(R.string.serverdown));
+				item.setIcon(getResources().getDrawable(
+						R.drawable.ic_action_stop));
+			} else {
+				stopServer();
+				item.setTitle(getString(R.string.serverup));
+				item.setIcon(getResources().getDrawable(
+						R.drawable.ic_action_start));
+			}
+		default:
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
+
 	}
 
-	public class Connect extends AsyncTask<Void, Void, Boolean> {
+	public void startServer() {
+		int port = spf
+				.getInt(getString(R.string.pref_port), Constants.DEF_PORT);
+		if (port != 0)
+			new ServerStart().execute(port);
+		else
+			Utility.log(TAG, "port not ok");
+	}
+
+	public void stopServer() {
+		new ServerStop().execute();
+	}
+
+	public class ConnectToServer extends AsyncTask<Void, Void, Boolean> {
 
 		@Override
 		protected Boolean doInBackground(Void... params) {
 			try {
 				String sip = spf.getString(getString(R.string.pref_ip), null);
-				int port = spf.getInt(getString(R.string.pref_port), -1);
+				int port = spf.getInt(getString(R.string.pref_port), Constants.DEF_PORT);
 				if (sip != null && port > 0) {
 					s = new Socket(sip, port);
-					br = new BufferedReader(new InputStreamReader(
-							s.getInputStream()));
 					output = new PrintWriter(s.getOutputStream(), true);
-					connected = true;
+					clients_PWs.add(output);
+					CONN_SERVER = true;
+					Log.d(TAG, "connected to server");
 					return true;
 				} else {
 					Log.d(TAG, "ip or port not set");
-					connected = false;
+					CONN_SERVER = false;
 					return false;
 				}
 			} catch (Exception e) {
@@ -99,13 +144,13 @@ public class MainActivity extends Activity {
 
 		protected void onPostExecute(Boolean result) {
 			if (result) {
+				getData gt = new getData();
+				gt.execute(s);
 				FragementMain.holder.cbutton.setImageDrawable(context
 						.getResources().getDrawable(R.drawable.ic_connected_b));// ("Disconnect");
 				FragementMain.holder.sbutton.setEnabled(true);
 				FragementMain.holder.sbutton.setImageDrawable(context
 						.getResources().getDrawable(R.drawable.ic_send_b));
-				getData gt = new getData();
-				gt.execute();
 			} else
 				Toast.makeText(context,
 						context.getString(R.string.toast_conn_error),
@@ -116,7 +161,7 @@ public class MainActivity extends Activity {
 	public static void disconnect() {
 		try {
 			s.close();
-			connected = false;
+			CONN_SERVER = false;
 			FragementMain.holder.sbutton.setEnabled(false);
 			FragementMain.holder.sbutton.setImageDrawable(context
 					.getResources().getDrawable(
@@ -133,10 +178,10 @@ public class MainActivity extends Activity {
 	}
 
 	public void setConnection(View view) {
-		if (connected) {
+		if (CONN_SERVER) {
 			disconnect();
 		} else {
-			new Connect().execute();
+			new ConnectToServer().execute();
 		}
 
 	}
@@ -160,8 +205,8 @@ public class MainActivity extends Activity {
 	public void sendText(View view) {
 		String msg = FragementMain.holder.text.getText().toString().trim();
 		if (msg.length() > 0) {
-			output.println(msg);
-			FragementMain.holder.text.getText().clear();
+			new sendData().execute(msg);
+		FragementMain.holder.text.getText().clear();
 		}
 	}
 
@@ -169,18 +214,46 @@ public class MainActivity extends Activity {
 		FragementMain.holder.text.getText().clear();
 	}
 
-	static class getData extends AsyncTask<Void, String, String> {
+	public void updateIP(View view) {
+		if (!updating) {
+			updating = true;
+			new SetIp().execute();
+		} else {
+			Toast.makeText(getApplicationContext(),
+					getString(R.string.updating), Toast.LENGTH_SHORT).show();
+		}
+	}
+static class sendData extends AsyncTask<String, Void, Void>{
+
+	@Override
+	protected Void doInBackground(String... params) {
+		for(PrintWriter pw:clients_PWs)
+			pw.println(params[0]);
+		return null;
+	}
+	
+}
+	static class getData extends AsyncTask<Socket, String, String> {
 
 		@Override
-		protected String doInBackground(Void... params) {
+		protected String doInBackground(Socket... params) {
+			BufferedReader lbr;
 			String str = null;
 			try {
-				while ((str = br.readLine()) != null) {
+				lbr = new BufferedReader(new InputStreamReader(
+						params[0].getInputStream()));
+				while ((str = lbr.readLine()) != null && !params[0].isInputShutdown()) {
 					publishProgress(str);
 				}
-				Log.d(TAG, "done in background finished");
+				Log.d(TAG, "getData finished properly");
 			} catch (Exception e) {
-				Log.d(TAG, "do in back " + e);
+				Log.d(TAG, "getData ended" + e);
+				try {
+					if (params[0] != null && !params[0].isClosed())
+						params[0].close();
+				} catch (Exception ee) {
+
+				}
 			}
 			return str;
 		}
@@ -189,11 +262,94 @@ public class MainActivity extends Activity {
 		protected void onProgressUpdate(String... values) {
 			FragementMain.holder.text.getText().append(values[0] + "\n");
 		}
+	}
+
+	public static class ServerStart extends AsyncTask<Integer, Void, Boolean> {
 
 		@Override
-		protected void onPostExecute(String result) {
-			disconnect();
+		protected Boolean doInBackground(Integer... port) {
+			try {
+				ss = new ServerSocket(port[0]);
+				serverup = true;
+				while (true) {
+					s = ss.accept();
+					output = new PrintWriter(s.getOutputStream(), true);
+					cSockets.add(s);
+					clients_PWs.add(output);
+					CLIENT_COUNT++;
+					publishProgress();
+				}
+				// return true;
+			} catch (IOException e) {
+				Utility.log(TAG, "server stopped");
+				serverup = false;
+				return false;
+			}
+		}
 
+		@Override
+		protected void onProgressUpdate(Void... values) {
+			getData gt = new getData();
+			gt.execute(s);
+			Toast.makeText(context, "client connected (" + CLIENT_COUNT + ")",
+					Toast.LENGTH_SHORT).show();
+			if (!FragementMain.holder.sbutton.isEnabled()) {
+				FragementMain.holder.sbutton.setEnabled(true);
+				FragementMain.holder.sbutton.setImageDrawable(context
+						.getResources().getDrawable(R.drawable.ic_send_b));
+			}
+			super.onProgressUpdate(values);
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if (result) {
+				FragementMain.holder.sbutton.setEnabled(true);
+				FragementMain.holder.sbutton.setImageDrawable(context
+						.getResources().getDrawable(R.drawable.ic_send_b));
+			} else {
+				Utility.log(TAG, "error connecting client");
+			}
+			super.onPostExecute(result);
+		}
+	}
+
+	public static class ServerStop extends AsyncTask<Void, Void, Boolean> {
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			try {
+				if (ss != null) {
+					ss.close();
+					serverup = false;
+					for(Socket ts:cSockets){
+						try{
+						ts.close();
+						}catch(Exception e){
+							Utility.log(TAG,"a client cannot be closed");
+						}
+					}
+					cSockets.clear();
+					clients_PWs.clear();
+				}
+				return true;
+			} catch (Exception e) {
+				Utility.log(TAG,"closing serverSocket threw exception");
+				if (!ss.isClosed())
+					return false;
+				else
+					return true;
+				
+			}
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if(result)
+				Utility.log(TAG, "server closed");
+			else
+				Utility.log(TAG, "server not closed");
+			super.onPostExecute(result);
 		}
 	}
 	/*

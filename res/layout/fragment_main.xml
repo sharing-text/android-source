@@ -8,24 +8,41 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin" >
 
-    <TextView
-        android:id="@+id/textViewServer"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/textviewserver"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:layout_height="wrap_content" >
 
-    <TextView
-        android:id="@+id/textViewLocal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/textviewlocal"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        <TextView
+            android:id="@+id/textViewServer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/imageButtonRefreshIPs"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/textviewserver" />
+
+        <TextView
+            android:id="@+id/textViewLocal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textViewServer"
+            android:layout_toLeftOf="@+id/imageButtonRefreshIPs"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/textviewlocal" />
+
+        <ImageButton
+            android:id="@+id/imageButtonRefreshIPs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:background="@null"
+            android:onClick="updateIP"
+            android:src="@drawable/ic_action_refresh" />
+    </RelativeLayout>
 
     <RelativeLayout
-         android:id="@+id/relativetextcontainer"
+        android:id="@+id/relativetextcontainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -35,13 +52,12 @@
             android:id="@+id/editTextReceived"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
             android:ems="10"
             android:hint="@string/edittext_msg"
             android:inputType="textMultiLine"
             android:isScrollContainer="true"
-            android:selectAllOnFocus="true"
-            android:layout_alignParentBottom="true"
-             >
+            android:selectAllOnFocus="true" >
 
             <requestFocus />
         </EditText>

@@ -18,7 +18,7 @@
         android:title="@string/pref_port_title" >
     </EditTextPreference>
     <EditTextPreference
-        android:defaultValue="23456"
+        android:defaultValue="2345"
         android:inputType="number"
         android:key="@string/pref_sport"
         android:selectable="true"
