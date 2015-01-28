@@ -1,13 +1,14 @@
-package nu.info.zeeshan.getthetext;
+package io.github.zkhan93.sharingtext.main;
 
-import nu.info.zeeshan.getthetext.util.Constants;
-import nu.info.zeeshan.getthetext.util.Utility;
+import io.github.zkhan93.sharingtext.util.Constants;
+import io.github.zkhan93.sharingtext.util.Utility;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -56,9 +57,11 @@ public class FragementMain extends Fragment {
 		TextView tserver;
 		TextView tlocal;
 	}
-	public static String getText(){
+
+	public static String getText() {
 		return holder.text.getText().toString();
 	}
+
 	public static void setSendButton(boolean enable) {
 		holder.sbutton.setEnabled(enable);
 	}
@@ -79,6 +82,7 @@ public class FragementMain extends Fragment {
 	}
 
 	public static class SetIp extends AsyncTask<Void, Void, String> {
+
 		@Override
 		protected String doInBackground(Void... params) {
 			return Utility.getIpAddress();
@@ -86,26 +90,18 @@ public class FragementMain extends Fragment {
 
 		@Override
 		protected void onPostExecute(String result) {
-			int lport = spf.getInt(context.getString(R.string.pref_port), -1);
-			int sport = spf.getInt(context.getString(R.string.pref_sport), -1);
-			if (lport == -1)
-				holder.tlocal.setText(context.getString(R.string.textviewlocal)
-						+ Utility.getIpAddress()
-						+ context.getString(R.string.porterror));
-			else
-				holder.tlocal.setText(context.getString(R.string.textviewlocal)
-						+ Utility.getIpAddress() + Constants.COLON + lport);
-			if (sport == -1)
-				holder.tserver.setText(context
-						.getString(R.string.textviewserver)
-						+ spf.getString(context.getString(R.string.pref_ip),
-								null) + context.getString(R.string.porterror));
-			else
-				holder.tserver.setText(context
-						.getString(R.string.textviewserver)
-						+ spf.getString(context.getString(R.string.pref_ip),
-								null) + Constants.COLON + sport);
+			int lport = spf.getInt(context.getString(R.string.pref_port),
+					Constants.DEF_PORT);
+			int sport = spf.getInt(context.getString(R.string.pref_sport),
+					Constants.DEF_PORT);
+
+			holder.tlocal.setText(context.getString(R.string.textviewlocal)
+					+ Utility.getIpAddress() + Constants.COLON + lport);
+			holder.tserver.setText(context.getString(R.string.textviewserver)
+					+ spf.getString(context.getString(R.string.pref_ip), null)
+					+ Constants.COLON + sport);
 			MainActivity.updating = false;
+			Log.d("msg","done ip update");
 			super.onPostExecute(result);
 		}
 	}

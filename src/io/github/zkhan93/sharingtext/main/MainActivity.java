@@ -1,4 +1,8 @@
-package nu.info.zeeshan.getthetext;
+package io.github.zkhan93.sharingtext.main;
+
+import io.github.zkhan93.sharingtext.main.FragementMain.SetIp;
+import io.github.zkhan93.sharingtext.util.Constants;
+import io.github.zkhan93.sharingtext.util.Utility;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,9 +11,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import nu.info.zeeshan.getthetext.FragementMain.SetIp;
-import nu.info.zeeshan.getthetext.util.Constants;
-import nu.info.zeeshan.getthetext.util.Utility;
+
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -24,10 +26,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
-	public static String TAG = "nu.info.zeeshan.getthetext.MainActivity";
+	public static String TAG = "io.github.zkhan93.sharingtext.main.MainActivity";
 	static Socket s;
 	static BufferedReader reader;
 	static PrintWriter writer;
@@ -250,6 +254,10 @@ public class MainActivity extends ActionBarActivity {
 
 	public void updateIP(View view) {
 		if (!updating) {
+			Animation animrotate = AnimationUtils.loadAnimation(
+					getApplicationContext(), R.anim.rotate);
+			view.startAnimation(animrotate);
+			
 			updating = true;
 			new SetIp().execute();
 		} else {

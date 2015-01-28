@@ -17,7 +17,7 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="nu.info.zeeshan.getthetext.MainActivity"
+        tools:context="io.github.zkhan93.sharingtext.main.MainActivity"
         tools:ignore="MergeRootFrame" >
     </FrameLayout>
 

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#009688</color>
-    <color name="colorPrimaryDark">#00796B</color>
-    <color name="colorPrimaryLight">#4DB6AC</color>
-    <color name="colorPrimaryExtraLight">#80CBC4</color>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#1A237E</color>
+  
+    <color name="colorBtnPrimary">#3F51B5</color>
+    <color name="colorBtnDark">#1A237E</color>
+    <color name="colorBtnLight">#7986CB</color>
+    
+    
     
 </resources>

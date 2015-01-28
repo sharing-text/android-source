@@ -1,4 +1,4 @@
-package nu.info.zeeshan.getthetext.util;
+package io.github.zkhan93.sharingtext.util;
 
 public class Constants {
 	public static String COLON=":";

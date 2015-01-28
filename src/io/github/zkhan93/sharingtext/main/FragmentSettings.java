@@ -1,6 +1,6 @@
-package nu.info.zeeshan.getthetext;
+package io.github.zkhan93.sharingtext.main;
 
-import nu.info.zeeshan.getthetext.util.Utility;
+import io.github.zkhan93.sharingtext.util.Utility;
 
 import org.apache.http.conn.util.InetAddressUtils;
 
@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 public class FragmentSettings extends PreferenceFragment implements
 OnSharedPreferenceChangeListener {
-	public static String TAG="nu.info.zeeshan.getthetext.FragmentSettings";
+	public static String TAG="io.github.zkhan93.sharingtext.main.FragmentSettings";
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

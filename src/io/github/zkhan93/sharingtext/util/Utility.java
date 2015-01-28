@@ -1,4 +1,4 @@
-package nu.info.zeeshan.getthetext.util;
+package io.github.zkhan93.sharingtext.util;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -12,7 +12,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class Utility {
-	public static String TAG="nu.info.zeeshan.getthetext.util";
+	public static String TAG="io.github.zkhan93.sharingtext.util.Utility";
 	 public static String getIpAddress() {
 	      try {
 	         for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements();) {
