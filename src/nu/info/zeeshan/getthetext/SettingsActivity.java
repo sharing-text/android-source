@@ -9,7 +9,9 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
+
 
 public class SettingsActivity extends PreferenceActivity implements
 OnSharedPreferenceChangeListener {
@@ -18,8 +20,8 @@ OnSharedPreferenceChangeListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//setContentView(R.layout.activity_settings);
-	     //getSupportFragmentManager().beginTransaction().replace(R.id.settingContainer,new SettingFragment()).commit();
+		Toolbar toolbar=(Toolbar) findViewById(R.id.toolbar);
+		
 		addPreferencesFromResource(R.xml.settings);
 	}
 	@Override

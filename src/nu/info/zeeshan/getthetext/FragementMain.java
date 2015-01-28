@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class FragementMain extends Fragment {
 	static Context context;
@@ -35,24 +34,11 @@ public class FragementMain extends Fragment {
 		holder.sbutton = (ImageButton) rootView.findViewById(R.id.buttonSend);
 		holder.tlocal = (TextView) rootView.findViewById(R.id.textViewLocal);
 		holder.tserver = (TextView) rootView.findViewById(R.id.textViewServer);
+		setSendButton(MainActivity.CLIENT_CONN);
 		Bundle bundle = getArguments();
 		if (bundle != null) {
-
 			holder.text.getText().append(bundle.getString(Intent.EXTRA_TEXT));
-
-		}
-		if (MainActivity.CONN_SERVER) {
-			holder.cbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_connected_b));
-			holder.sbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_send_b));
-			holder.sbutton.setEnabled(true);
-		} else {
-			holder.cbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_disconnected_b));
-			holder.sbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_action_send_disable));
-			holder.sbutton.setEnabled(false);
+			// send is connected
 		}
 		return rootView;
 	}
@@ -69,6 +55,34 @@ public class FragementMain extends Fragment {
 		ImageButton sbutton;
 		TextView tserver;
 		TextView tlocal;
+	}
+	public static String getText(){
+		return holder.text.getText().toString();
+	}
+	public static void setSendButton(boolean enable) {
+		holder.sbutton.setEnabled(enable);
+		if (enable) {
+			holder.sbutton.setImageDrawable(context.getResources().getDrawable(
+					R.drawable.ic_send_b));
+		} else {
+			holder.sbutton.setImageDrawable(context.getResources().getDrawable(
+					R.drawable.ic_action_send_disable));
+		}
+	}
+
+	public static void setConnButton(boolean connected, boolean clickable) {
+		if (connected) {
+			holder.cbutton.setImageDrawable(context.getResources().getDrawable(
+					R.drawable.ic_connected_b));
+		} else {
+			holder.cbutton.setImageDrawable(context.getResources().getDrawable(
+					R.drawable.ic_disconnected_b));
+		}
+		if (clickable) {
+			holder.cbutton.setEnabled(true);
+		} else {
+			holder.cbutton.setEnabled(false);
+		}
 	}
 
 	public static class SetIp extends AsyncTask<Void, Void, String> {

@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 
 import nu.info.zeeshan.getthetext.FragementMain.SetIp;
 import nu.info.zeeshan.getthetext.util.Constants;
@@ -25,7 +24,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
@@ -36,18 +34,14 @@ public class MainActivity extends ActionBarActivity {
 	// public static TextView tserver;
 	// public static TextView tlocal;
 	static Socket s;
-	static BufferedReader br;
-	static PrintWriter output;
-	static ArrayList<PrintWriter> clients_PWs;
-	static ArrayList<Socket> cSockets;
-	static int CLIENT_COUNT;
-	static boolean CONN_SERVER;
+	static BufferedReader reader;
+	static PrintWriter writer;
 	static Context context;
 	SharedPreferences spf;
 	public static boolean updating;
 	public static ServerSocket ss;
-	// public static Socket cs;
-	public static boolean CONN_CLIENT;
+	// pubic static Socket cs;
+	static boolean CLIENT_CONN;
 	public static boolean serverup;
 
 	@Override
@@ -57,18 +51,16 @@ public class MainActivity extends ActionBarActivity {
 		Intent intent = this.getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
-		FragementMain fragment=new FragementMain();
+		FragementMain fragment = new FragementMain();
 		if (Intent.ACTION_SEND.equals(action) && type != null) {
 			if ("text/plain".equals(type)) {
-						Bundle bundle=new Bundle();
-						bundle.putString(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_TEXT));
-						fragment.setArguments(bundle);
-				}
+				Bundle bundle = new Bundle();
+				bundle.putString(Intent.EXTRA_TEXT,
+						intent.getStringExtra(Intent.EXTRA_TEXT));
+				fragment.setArguments(bundle);
+			}
 		}
-		if (clients_PWs == null)
-			clients_PWs = new ArrayList<PrintWriter>();
-		if (cSockets == null)
-			cSockets = new ArrayList<Socket>();
+
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
 					.replace(R.id.container, fragment).commit();
@@ -77,9 +69,7 @@ public class MainActivity extends ActionBarActivity {
 				Context.MODE_PRIVATE);
 		context = getApplicationContext();
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-		
-
-		
+		setSupportActionBar(toolbar);
 	}
 
 	@Override
@@ -110,7 +100,12 @@ public class MainActivity extends ActionBarActivity {
 				startServer();
 			}
 			return true;
-		case R.id.action_info:
+		case R.id.action_share:
+			intent = new Intent();
+			intent.setAction(Intent.ACTION_SEND);
+			intent.setType("text/html|text/plain");
+			intent.putExtra(Intent.EXTRA_TEXT, FragementMain.getText() );  
+			startActivity(Intent.createChooser(intent, "Share Text via"));
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -130,16 +125,10 @@ public class MainActivity extends ActionBarActivity {
 		return super.onPrepareOptionsMenu(menu);
 	}
 
-	@Override
-	public void onStart() {
-		super.onStart();
-
-	}
-
 	public void startServer() {
 		int port = spf
 				.getInt(getString(R.string.pref_port), Constants.DEF_PORT);
-		if (port != 0)
+		if (port > 0)
 			new ServerStart().execute(port);
 		else
 			Utility.log(TAG, "port not ok");
@@ -147,7 +136,7 @@ public class MainActivity extends ActionBarActivity {
 
 	public void stopServer() {
 		Utility.log(TAG, "in stop server1");
-		new ServerStop().start();
+		new ServerStop().execute();
 		Utility.log(TAG, "in stop server2");
 	}
 
@@ -161,32 +150,37 @@ public class MainActivity extends ActionBarActivity {
 						Constants.DEF_PORT);
 				if (sip != null && port > 0) {
 					s = new Socket(sip, port);
-					output = new PrintWriter(s.getOutputStream(), true);
-					CONN_SERVER = true;
+					writer = new PrintWriter(s.getOutputStream(), true);
+					reader = new BufferedReader(new InputStreamReader(
+							s.getInputStream()));
+					CLIENT_CONN = true;
 					Log.d(TAG, "connected to server");
 					return true;
 				} else {
 					Log.d(TAG, "ip or port not set");
-					CONN_SERVER = false;
+					CLIENT_CONN = false;
 					return false;
 				}
 			} catch (Exception e) {
 				Log.d(TAG, "socket failed" + e);
+				CLIENT_CONN = false;
 				return false;
 			}
 		}
 
 		protected void onPostExecute(Boolean result) {
 			if (result) {
-				clients_PWs.clear();
-				clients_PWs.add(output);
-				getData gt = new getData(0);
-				gt.execute(s);
-				FragementMain.holder.cbutton.setImageDrawable(context
-						.getResources().getDrawable(R.drawable.ic_connected_b));// ("Disconnect");
-				FragementMain.holder.sbutton.setEnabled(true);
-				FragementMain.holder.sbutton.setImageDrawable(context
-						.getResources().getDrawable(R.drawable.ic_send_b));
+				runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						new getData().execute();
+						Log.d(TAG, "started get DATA");
+					}
+				});
+
+				FragementMain.setConnButton(true, true);
+				FragementMain.setSendButton(true);
 			} else
 				Toast.makeText(context,
 						context.getString(R.string.toast_conn_error),
@@ -194,19 +188,21 @@ public class MainActivity extends ActionBarActivity {
 		};
 	}
 
-	public static void disconnect() {
+	public void disconnect() {
 		try {
 			s.close();
-			CONN_SERVER = false;
-			FragementMain.holder.sbutton.setEnabled(false);
-			FragementMain.holder.sbutton.setImageDrawable(context
-					.getResources().getDrawable(
-							R.drawable.ic_action_send_disable));
-			FragementMain.holder.cbutton.setImageDrawable(context
-					.getResources().getDrawable(R.drawable.ic_disconnected_b));// ("Connect");
+			CLIENT_CONN = false;
+			FragementMain.setSendButton(false);
+			if (serverup){
+				FragementMain.setConnButton(false, false);
+				new WaitForClient().execute();
+			}
+			else
+				FragementMain.setConnButton(false, true);
 			Toast.makeText(context,
 					context.getString(R.string.toast_disconnected),
 					Toast.LENGTH_SHORT).show();
+			
 		} catch (Exception e) {
 			Log.d(TAG, "cannot close s " + e);
 		}
@@ -214,7 +210,8 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	public void setConnection(View view) {
-		if (CONN_SERVER) {
+		if (CLIENT_CONN) {
+			new sendData(null).start();
 			disconnect();
 		} else {
 			new ConnectToServer().execute();
@@ -267,7 +264,7 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
-	static class sendData extends Thread {
+	class sendData extends Thread {
 		String msg;
 
 		public sendData(String m) {
@@ -275,41 +272,35 @@ public class MainActivity extends ActionBarActivity {
 		}
 
 		public void run() {
-			for (PrintWriter pw : clients_PWs)
-				pw.println(msg);
-			Utility.log(TAG, "msg send to all " + clients_PWs.size());
+			try {
+				if (writer != null) {
+					writer.println(msg);
+					Utility.log(TAG, "msg send ");
+				}
+			} catch (Exception e) {
+				CLIENT_CONN = false;
+				disconnect();
+				Log.d(TAG, " sending fail " + e.getMessage());
+			}
 		}
 	}
 
-	static class getData extends AsyncTask<Socket, String, Void> {
-		int index;
-
-		public getData(int i) {
-			index = i;
-		}
-
+	class getData extends AsyncTask<Void, String, Void> {
 		@Override
-		protected Void doInBackground(Socket... params) {
-			BufferedReader lbr;
+		protected Void doInBackground(Void... params) {
 			String str = null;
 			try {
-				lbr = new BufferedReader(new InputStreamReader(
-						params[0].getInputStream()));
 				Utility.log(TAG, "waiting for input string");
-				while ((str = lbr.readLine()) != null) {
+				while ((str = reader.readLine()) != null && CLIENT_CONN) {
 					publishProgress(str);
+					Log.d(TAG, "got some msg");
 				}
-				Log.d(TAG, "getData finished properly");
-			} catch (Exception e) {
-				Log.d(TAG, "getData ended" + e);
-				try {
-					clients_PWs.remove(index);
-					cSockets.remove(index);
-					if (params[0] != null && !params[0].isClosed())
-						params[0].close();
-				} catch (Exception ee) {
 
-				}
+			} catch (Exception e) {
+				Log.d(TAG, "getData " + e.getMessage());
+				CLIENT_CONN = false;
+			} finally {
+				Log.d(TAG, "get data terminating");
 			}
 			return null;
 		}
@@ -322,56 +313,87 @@ public class MainActivity extends ActionBarActivity {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			Utility.log(TAG, "client closed " + clients_PWs.size()
-					+ " remaining");
+			Utility.log(TAG, "get Data termianting onPostExecute");
+			runOnUiThread(new Runnable() {
+				
+				@Override
+				public void run() {
+					disconnect();
+					
+				}
+			});
 			super.onPostExecute(result);
 		}
 	}
 
-	public static class ServerStart extends AsyncTask<Integer, Socket, Boolean> {
+	public class WaitForClient extends AsyncTask<Void, Void, Boolean> {
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			try {
+				Utility.log(TAG, "server waiting");
+				s = ss.accept();
+				writer = new PrintWriter(s.getOutputStream(), true);
+				reader = new BufferedReader(new InputStreamReader(
+						s.getInputStream()));
+				Utility.log(TAG, "client Connected");
+				CLIENT_CONN = true;
+			} catch (IOException e) {
+				if (s == null || !s.isConnected())
+					CLIENT_CONN = false;
+				else
+					CLIENT_CONN = true;
+			}
+			return CLIENT_CONN;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+			FragementMain.setSendButton(true);
+			FragementMain.setConnButton(true, true);
+			runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					new getData().execute();
+				}
+			});
+			super.onPostExecute(result);
+		}
+
+	}
+
+	public class ServerStart extends AsyncTask<Integer, Void, Boolean> {
 
 		@Override
 		protected Boolean doInBackground(Integer... port) {
 			try {
-				ss = new ServerSocket(port[0]);
-				serverup = true;
-				Utility.log(TAG, "server started");
-				while (true) {
-					Utility.log(TAG, "server waiting");
-					s = ss.accept();
-					output = new PrintWriter(s.getOutputStream(), true);
-					cSockets.add(s);
-					clients_PWs.add(output);
-					CLIENT_COUNT++;
-					publishProgress(s);
+				if (ss == null || ss.isClosed()) {
+					ss = new ServerSocket(port[0], 1);
+					serverup = true;
+					Utility.log(TAG, "server started");
 				}
 			} catch (IOException e) {
 				Utility.log(TAG, "server stopped");
-				serverup = false;
-				return false;
-			}
-		}
+				if (ss == null || ss.isClosed())
+					serverup = false;
+				else
+					serverup = true;
 
-		@Override
-		protected void onProgressUpdate(Socket... values) {
-			new getData(CLIENT_COUNT).execute(values[0]);
-			Utility.log(TAG, "client set");
-			Toast.makeText(context, "client connected (" + CLIENT_COUNT + ")",
-					Toast.LENGTH_SHORT).show();
-			if (!FragementMain.holder.sbutton.isEnabled()) {
-				FragementMain.holder.sbutton.setEnabled(true);
-				FragementMain.holder.sbutton.setImageDrawable(context
-						.getResources().getDrawable(R.drawable.ic_send_b));
 			}
-			super.onProgressUpdate(values);
+			return true;
 		}
 
 		@Override
 		protected void onPostExecute(Boolean result) {
 			if (result) {
-				FragementMain.holder.sbutton.setEnabled(true);
-				FragementMain.holder.sbutton.setImageDrawable(context
-						.getResources().getDrawable(R.drawable.ic_send_b));
+				FragementMain.setConnButton(false, false);
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						new WaitForClient().execute();
+					}
+				});
+
 			} else {
 				Utility.log(TAG, "error connecting client");
 			}
@@ -379,59 +401,31 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
-	public static class ServerStop extends Thread {
-
-		public void run() {
-			Utility.log(TAG, "socket closing thread0");
+	public static class ServerStop extends AsyncTask<Void, Void, Void> {
+		@Override
+		protected Void doInBackground(Void... params) {
 			try {
-				Utility.log(TAG, "socket closing thread" + ss);
+				Utility.log(TAG, "server socket closing thread");
 				ss.close();
-				Utility.log(TAG, "socket closed");
+				Utility.log(TAG, "server socket closed");
 				serverup = false;
-				for (Socket ts : cSockets) {
-					try {
-						ts.close();
-					} catch (Exception e) {
-						Utility.log(TAG, "a client cannot be closed");
-					}
-				}
-				cSockets.clear();
-				clients_PWs.clear();
-
-				Utility.log(TAG, "closing serverSocket and client done");
+				s.close();
+				CLIENT_CONN = false;
+				Utility.log(TAG, "closed serverSocket and client done");
 			} catch (Exception e) {
 				Utility.log(TAG, "closing serverSocket threw exception");
 				if (ss == null || ss.isClosed())
 					serverup = false;
 			}
+			return null;
+		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			FragementMain.setSendButton(false);
+			FragementMain.setConnButton(false, true);
+			super.onPostExecute(result);
 		}
 	}
-	/*
-	 * public class PlaceholderFragment extends Fragment {
-	 * 
-	 * @Override public View onCreateView(LayoutInflater inflater, ViewGroup
-	 * container, Bundle savedInstanceState) { View rootView =
-	 * inflater.inflate(R.layout.fragment_main, container, false); text =
-	 * (EditText) rootView.findViewById(R.id.editTextReceived); cbutton =
-	 * (ImageButton) rootView.findViewById(R.id.buttonCon); sbutton =
-	 * (ImageButton) rootView.findViewById(R.id.buttonSend); tlocal=(TextView)
-	 * rootView.findViewById(R.id.textViewLocal); tserver=(TextView)
-	 * rootView.findViewById(R.id.textViewServer); if (connected) {
-	 * cbutton.setImageDrawable(context.getResources().getDrawable(
-	 * R.drawable.ic_connected_b));
-	 * sbutton.setImageDrawable(context.getResources().getDrawable(
-	 * R.drawable.ic_send_b)); sbutton.setEnabled(true); } else {
-	 * cbutton.setImageDrawable(context.getResources().getDrawable(
-	 * R.drawable.ic_disconnected_b));
-	 * sbutton.setImageDrawable(context.getResources().getDrawable(
-	 * R.drawable.ic_action_send_disable)); sbutton.setEnabled(false); } return
-	 * rootView; }
-	 * 
-	 * @Override public void onStart(){ super.onStart();
-	 * tlocal.setText(getString
-	 * (R.string.textviewserver)+Utility.getIpAddress());
-	 * tserver.setText(getString
-	 * (R.string.textviewlocal)+spf.getString(getString(
-	 * R.string.pref_ip),null)); } }
-	 */
+
 }

@@ -36,7 +36,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:background="@null"
+            android:background="@drawable/btn_back"
             android:onClick="updateIP"
             android:src="@drawable/ic_action_refresh" />
     </RelativeLayout>
@@ -65,47 +65,69 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:gravity="center" >
+
+        <android.support.v7.widget.Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/buttonSend"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:background="@null"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_back"
             android:contentDescription="@string/btn_action_send"
             android:onClick="sendText"
-            android:src="@drawable/ic_send_b" />
+            android:src="@drawable/ic_action_send_disable" />
+
+        <android.support.v7.widget.Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/buttonClear"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:background="@null"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_back"
             android:contentDescription="@string/btn_action_clear"
             android:onClick="clearText"
             android:src="@drawable/ic_delete_b" />
 
-        <ImageButton
-            android:id="@+id/buttonCon"
+        <android.support.v7.widget.Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:background="@null"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/buttonCon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_back"
             android:contentDescription="@string/btn_action_connection"
             android:onClick="setConnection"
             android:src="@drawable/ic_disconnected_b" />
 
-        <ImageButton
-            android:id="@+id/buttonCopy"
+        <android.support.v7.widget.Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.25"
-            android:background="@null"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/buttonCopy"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_back"
             android:contentDescription="@string/btn_action_copy"
             android:onClick="copyText"
             android:src="@drawable/ic_copy_b" />
+
+        <android.support.v7.widget.Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
     </LinearLayout>
 
 </LinearLayout>
