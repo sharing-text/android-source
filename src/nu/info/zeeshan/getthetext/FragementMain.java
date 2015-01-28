@@ -61,22 +61,15 @@ public class FragementMain extends Fragment {
 	}
 	public static void setSendButton(boolean enable) {
 		holder.sbutton.setEnabled(enable);
-		if (enable) {
-			holder.sbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_send_b));
-		} else {
-			holder.sbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_action_send_disable));
-		}
 	}
 
 	public static void setConnButton(boolean connected, boolean clickable) {
 		if (connected) {
 			holder.cbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_connected_b));
+					R.drawable.ic_action_connected));
 		} else {
 			holder.cbutton.setImageDrawable(context.getResources().getDrawable(
-					R.drawable.ic_disconnected_b));
+					R.drawable.ic_action_disconnected));
 		}
 		if (clickable) {
 			holder.cbutton.setEnabled(true);

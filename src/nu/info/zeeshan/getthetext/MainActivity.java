@@ -28,11 +28,6 @@ import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
 	public static String TAG = "nu.info.zeeshan.getthetext.MainActivity";
-	// public static EditText text;
-	// public static ImageButton cbutton;
-	// public static ImageButton sbutton;
-	// public static TextView tserver;
-	// public static TextView tlocal;
 	static Socket s;
 	static BufferedReader reader;
 	static PrintWriter writer;
@@ -104,7 +99,7 @@ public class MainActivity extends ActionBarActivity {
 			intent = new Intent();
 			intent.setAction(Intent.ACTION_SEND);
 			intent.setType("text/html|text/plain");
-			intent.putExtra(Intent.EXTRA_TEXT, FragementMain.getText() );  
+			intent.putExtra(Intent.EXTRA_TEXT, FragementMain.getText());
 			startActivity(Intent.createChooser(intent, "Share Text via"));
 			return true;
 		default:
@@ -193,16 +188,15 @@ public class MainActivity extends ActionBarActivity {
 			s.close();
 			CLIENT_CONN = false;
 			FragementMain.setSendButton(false);
-			if (serverup){
+			if (serverup) {
 				FragementMain.setConnButton(false, false);
 				new WaitForClient().execute();
-			}
-			else
+			} else
 				FragementMain.setConnButton(false, true);
 			Toast.makeText(context,
 					context.getString(R.string.toast_disconnected),
 					Toast.LENGTH_SHORT).show();
-			
+
 		} catch (Exception e) {
 			Log.d(TAG, "cannot close s " + e);
 		}
@@ -315,11 +309,11 @@ public class MainActivity extends ActionBarActivity {
 		protected void onPostExecute(Void result) {
 			Utility.log(TAG, "get Data termianting onPostExecute");
 			runOnUiThread(new Runnable() {
-				
+
 				@Override
 				public void run() {
 					disconnect();
-					
+
 				}
 			});
 			super.onPostExecute(result);

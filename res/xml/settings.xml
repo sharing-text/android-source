@@ -3,27 +3,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:title="@string/action_settings" >
 
-    <EditTextPreference
-        android:digits="1234567890."
-        android:key="@string/pref_ip"
-        android:summary="@string/pref_ip_desc"
-        android:title="@string/pref_ip_title" >
-    </EditTextPreference>
-    <EditTextPreference
-        android:defaultValue="2345"
-        android:inputType="number"
-        android:key="@string/pref_port"
-        android:selectable="true"
-        android:summary="@string/pref_port_desc"
-        android:title="@string/pref_port_title" >
-    </EditTextPreference>
-    <EditTextPreference
-        android:defaultValue="2345"
-        android:inputType="number"
-        android:key="@string/pref_sport"
-        android:selectable="true"
-        android:summary="@string/pref_sport_desc"
-        android:title="@string/pref_sport_title" >
-    </EditTextPreference>
+    <PreferenceCategory android:title="@string/pref_server_title" >
+        <EditTextPreference
+            android:digits="1234567890."
+            android:key="@string/pref_ip"
+            android:summary="@string/pref_ip_desc"
+            android:title="@string/pref_ip_title" >
+        </EditTextPreference>
+        <EditTextPreference
+            android:defaultValue="2345"
+            android:inputType="number"
+            android:key="@string/pref_sport"
+            android:selectable="true"
+            android:summary="@string/pref_sport_desc"
+            android:title="@string/pref_sport_title" >
+        </EditTextPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/pref_local_title" >
+        <EditTextPreference
+            android:defaultValue="2345"
+            android:inputType="number"
+            android:key="@string/pref_port"
+            android:selectable="true"
+            android:summary="@string/pref_port_desc"
+            android:title="@string/pref_port_title" >
+        </EditTextPreference>
+    </PreferenceCategory>
 
 </PreferenceScreen>
