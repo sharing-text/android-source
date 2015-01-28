@@ -20,10 +20,12 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
@@ -52,17 +54,32 @@ public class MainActivity extends ActionBarActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		Intent intent = this.getIntent();
+		String action = intent.getAction();
+		String type = intent.getType();
+		FragementMain fragment=new FragementMain();
+		if (Intent.ACTION_SEND.equals(action) && type != null) {
+			if ("text/plain".equals(type)) {
+						Bundle bundle=new Bundle();
+						bundle.putString(Intent.EXTRA_TEXT, intent.getStringExtra(Intent.EXTRA_TEXT));
+						fragment.setArguments(bundle);
+				}
+		}
 		if (clients_PWs == null)
 			clients_PWs = new ArrayList<PrintWriter>();
 		if (cSockets == null)
 			cSockets = new ArrayList<Socket>();
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
-					.add(R.id.container, new FragementMain()).commit();
+					.replace(R.id.container, fragment).commit();
 		}
 		spf = getSharedPreferences(getString(R.string.pref_filename),
 				Context.MODE_PRIVATE);
 		context = getApplicationContext();
+		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+		
+
+		
 	}
 
 	@Override
