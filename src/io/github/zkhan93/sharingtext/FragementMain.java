@@ -1,4 +1,4 @@
-package io.github.zkhan93.sharingtext.main;
+package io.github.zkhan93.sharingtext;
 
 import io.github.zkhan93.sharingtext.util.Constants;
 import io.github.zkhan93.sharingtext.util.Utility;

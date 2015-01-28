@@ -1,6 +1,6 @@
-package io.github.zkhan93.sharingtext.main;
+package io.github.zkhan93.sharingtext;
 
-import io.github.zkhan93.sharingtext.main.FragementMain.SetIp;
+import io.github.zkhan93.sharingtext.FragementMain.SetIp;
 import io.github.zkhan93.sharingtext.util.Constants;
 import io.github.zkhan93.sharingtext.util.Utility;
 
@@ -77,7 +77,7 @@ public class MainActivity extends ActionBarActivity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-
+	Intent intent ;
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -85,7 +85,13 @@ public class MainActivity extends ActionBarActivity {
 		// as you specify a parent activity in AndroidManifest.xml.
 		switch (item.getItemId()) {
 		case R.id.action_settings:
-			Intent intent = new Intent(this, SettingsActivity.class);
+			intent = new Intent(this, SettingsActivity.class);
+			intent.putExtra(Constants.FRAGMENT, Constants.FRAGMENT_SETTING);
+			startActivity(intent);
+			return true;
+		case R.id.action_about:
+			intent = new Intent(this, SettingsActivity.class);
+			intent.putExtra(Constants.FRAGMENT, Constants.FRAGMENT_ABOUT);
 			startActivity(intent);
 			return true;
 		case R.id.action_server:
