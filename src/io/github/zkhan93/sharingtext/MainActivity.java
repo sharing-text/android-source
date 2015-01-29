@@ -11,8 +11,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-
-import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -41,7 +39,7 @@ public class MainActivity extends ActionBarActivity {
 	public static ServerSocket ss;
 	// pubic static Socket cs;
 	static boolean CLIENT_CONN;
-	public static boolean serverup;
+	public static boolean serverup, waiting;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +75,9 @@ public class MainActivity extends ActionBarActivity {
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
 	}
-	Intent intent ;
+
+	Intent intent;
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle action bar item clicks here. The action bar will
@@ -140,9 +140,15 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	public void stopServer() {
-		Utility.log(TAG, "in stop server1");
-		new ServerStop().execute();
-		Utility.log(TAG, "in stop server2");
+		serverup = false;
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				new ServerStop().start();
+				Utility.log(TAG, "in stoping server");
+			}
+		});
+
 	}
 
 	public class ConnectToServer extends AsyncTask<Void, Void, Boolean> {
@@ -195,10 +201,11 @@ public class MainActivity extends ActionBarActivity {
 
 	public void disconnect() {
 		try {
-			s.close();
+			if (s != null && !s.isClosed())
+				s.close();
 			CLIENT_CONN = false;
 			FragementMain.setSendButton(false);
-			if (serverup) {
+			if (serverup && !waiting) {
 				FragementMain.setConnButton(false, false);
 				new WaitForClient().execute();
 			} else
@@ -216,21 +223,19 @@ public class MainActivity extends ActionBarActivity {
 	public void setConnection(View view) {
 		if (CLIENT_CONN) {
 			new sendData(null).start();
-			disconnect();
 		} else {
 			new ConnectToServer().execute();
 		}
 
 	}
 
-	@SuppressLint("NewApi")
 	public void copyText(View view) {
 		String msg = FragementMain.holder.text.getText().toString().trim();
 		if (msg.length() > 0) {
 			int sdk = android.os.Build.VERSION.SDK_INT;
 			if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
-				android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-				clipboard.setText(msg);
+				android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+				clipboard.setPrimaryClip(ClipData.newPlainText(null, msg));
 			} else {
 				ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 				ClipData data = ClipData.newPlainText("Text from PC", msg);
@@ -263,7 +268,7 @@ public class MainActivity extends ActionBarActivity {
 			Animation animrotate = AnimationUtils.loadAnimation(
 					getApplicationContext(), R.anim.rotate);
 			view.startAnimation(animrotate);
-			
+
 			updating = true;
 			new SetIp().execute();
 		} else {
@@ -287,8 +292,16 @@ public class MainActivity extends ActionBarActivity {
 				}
 			} catch (Exception e) {
 				CLIENT_CONN = false;
-				disconnect();
 				Log.d(TAG, " sending fail " + e.getMessage());
+			} finally {
+				if (msg == null) {
+					MainActivity.this.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							disconnect();
+						}
+					});
+				}
 			}
 		}
 	}
@@ -303,12 +316,8 @@ public class MainActivity extends ActionBarActivity {
 					publishProgress(str);
 					Log.d(TAG, "got some msg");
 				}
-
 			} catch (Exception e) {
 				Log.d(TAG, "getData " + e.getMessage());
-				CLIENT_CONN = false;
-			} finally {
-				Log.d(TAG, "get data terminating");
 			}
 			return null;
 		}
@@ -316,20 +325,20 @@ public class MainActivity extends ActionBarActivity {
 		@Override
 		protected void onProgressUpdate(String... values) {
 			Utility.log(TAG, " got text" + values[0]);
-			FragementMain.holder.text.getText().append(values[0] + "\n");
+			if (values[0] != null)
+				FragementMain.holder.text.getText().append(values[0] + "\n");
 		}
 
 		@Override
 		protected void onPostExecute(Void result) {
 			Utility.log(TAG, "get Data termianting onPostExecute");
-			runOnUiThread(new Runnable() {
-
-				@Override
-				public void run() {
-					disconnect();
-
-				}
-			});
+			CLIENT_CONN = false;
+			if (serverup) {
+				disconnect();
+			} else {
+				FragementMain.setSendButton(false);
+				FragementMain.setConnButton(false, true);
+			}
 			super.onPostExecute(result);
 		}
 	}
@@ -340,12 +349,13 @@ public class MainActivity extends ActionBarActivity {
 		protected Boolean doInBackground(Void... params) {
 			try {
 				Utility.log(TAG, "server waiting");
+				waiting = true;
 				s = ss.accept();
 				writer = new PrintWriter(s.getOutputStream(), true);
 				reader = new BufferedReader(new InputStreamReader(
 						s.getInputStream()));
-				Utility.log(TAG, "client Connected");
 				CLIENT_CONN = true;
+				waiting = false;
 			} catch (IOException e) {
 				if (s == null || !s.isConnected())
 					CLIENT_CONN = false;
@@ -357,6 +367,7 @@ public class MainActivity extends ActionBarActivity {
 
 		@Override
 		protected void onPostExecute(Boolean result) {
+			Utility.log(TAG, "client Connected");
 			FragementMain.setSendButton(true);
 			FragementMain.setConnButton(true, true);
 			runOnUiThread(new Runnable() {
@@ -386,14 +397,14 @@ public class MainActivity extends ActionBarActivity {
 					serverup = false;
 				else
 					serverup = true;
-
+				return serverup;
 			}
-			return true;
+			return serverup;
 		}
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-			if (result) {
+			if (result && !waiting) {
 				FragementMain.setConnButton(false, false);
 				runOnUiThread(new Runnable() {
 					@Override
@@ -409,30 +420,36 @@ public class MainActivity extends ActionBarActivity {
 		}
 	}
 
-	public static class ServerStop extends AsyncTask<Void, Void, Void> {
+	public class ServerStop extends Thread {
 		@Override
-		protected Void doInBackground(Void... params) {
+		public void run() {
 			try {
-				Utility.log(TAG, "server socket closing thread");
-				ss.close();
-				Utility.log(TAG, "server socket closed");
-				serverup = false;
-				s.close();
+				Utility.log(TAG, "server stopping thread ");
+				if (s != null && !s.isClosed()) {
+					s.close();
+				}
 				CLIENT_CONN = false;
-				Utility.log(TAG, "closed serverSocket and client done");
+				Utility.log(TAG, "closed client Socket ");
+				if (ss != null && !ss.isClosed()) {
+					ss.close();
+				}
+				Utility.log(TAG, "server socket closing thread");
+				serverup = false;
+				Utility.log(TAG, "server socket closed");
+				MainActivity.this.runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						FragementMain.setSendButton(false);
+						FragementMain.setConnButton(false, true);
+
+					}
+				});
 			} catch (Exception e) {
 				Utility.log(TAG, "closing serverSocket threw exception");
 				if (ss == null || ss.isClosed())
 					serverup = false;
 			}
-			return null;
-		}
-
-		@Override
-		protected void onPostExecute(Void result) {
-			FragementMain.setSendButton(false);
-			FragementMain.setConnButton(false, true);
-			super.onPostExecute(result);
 		}
 	}
 

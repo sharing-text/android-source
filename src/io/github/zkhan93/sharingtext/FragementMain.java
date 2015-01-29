@@ -36,6 +36,10 @@ public class FragementMain extends Fragment {
 		holder.tlocal = (TextView) rootView.findViewById(R.id.textViewLocal);
 		holder.tserver = (TextView) rootView.findViewById(R.id.textViewServer);
 		setSendButton(MainActivity.CLIENT_CONN);
+
+		setConnButton(MainActivity.CLIENT_CONN,
+				(MainActivity.CLIENT_CONN ? true
+						: (MainActivity.serverup ? false : true)));
 		Bundle bundle = getArguments();
 		if (bundle != null) {
 			holder.text.getText().append(bundle.getString(Intent.EXTRA_TEXT));
@@ -101,7 +105,7 @@ public class FragementMain extends Fragment {
 					+ spf.getString(context.getString(R.string.pref_ip), null)
 					+ Constants.COLON + sport);
 			MainActivity.updating = false;
-			Log.d("msg","done ip update");
+			Log.d("msg", "done ip update");
 			super.onPostExecute(result);
 		}
 	}
