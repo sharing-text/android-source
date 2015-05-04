@@ -24,8 +24,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 
 public class MainActivity extends ActionBarActivity {
@@ -35,6 +33,7 @@ public class MainActivity extends ActionBarActivity {
 	static PrintWriter writer;
 	static Context context;
 	SharedPreferences spf;
+
 	public static boolean updating;
 	public static ServerSocket ss;
 	// pubic static Socket cs;
@@ -57,16 +56,17 @@ public class MainActivity extends ActionBarActivity {
 				fragment.setArguments(bundle);
 			}
 		}
-
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
-					.replace(R.id.container, fragment).commit();
+					.replace(R.id.container, fragment, FragementMain.TAG)
+					.commit();
 		}
 		spf = getSharedPreferences(getString(R.string.pref_filename),
 				Context.MODE_PRIVATE);
 		context = getApplicationContext();
 		Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
+
 	}
 
 	@Override
@@ -111,6 +111,10 @@ public class MainActivity extends ActionBarActivity {
 			intent.setType("text/html|text/plain");
 			intent.putExtra(Intent.EXTRA_TEXT, FragementMain.getText());
 			startActivity(Intent.createChooser(intent, "Share Text via"));
+			return true;
+		case R.id.action_refresh:
+			Utility.log(TAG, "in menu otions");
+			updateIP();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -157,8 +161,9 @@ public class MainActivity extends ActionBarActivity {
 		protected Boolean doInBackground(Void... params) {
 			try {
 				String sip = spf.getString(getString(R.string.pref_ip), null);
-				int port = spf.getInt(getString(R.string.pref_port),
+				int port = spf.getInt(getString(R.string.pref_sport),
 						Constants.DEF_PORT);
+				Log.d(TAG, "port i am using is " + port);
 				if (sip != null && port > 0) {
 					s = new Socket(sip, port);
 					writer = new PrintWriter(s.getOutputStream(), true);
@@ -229,6 +234,13 @@ public class MainActivity extends ActionBarActivity {
 
 	}
 
+	public void showInfo(View view) {
+		Utility.log(TAG, "in show info");
+		FragementMain fragment = (FragementMain) (getSupportFragmentManager()
+				.findFragmentByTag(FragementMain.TAG));
+		fragment.toggleinfoViewVisibility();
+	}
+
 	public void copyText(View view) {
 		String msg = FragementMain.holder.text.getText().toString().trim();
 		if (msg.length() > 0) {
@@ -263,11 +275,13 @@ public class MainActivity extends ActionBarActivity {
 		FragementMain.holder.text.getText().clear();
 	}
 
-	public void updateIP(View view) {
+	public void updateIP() {
+		Utility.log(TAG, "in update ip");
 		if (!updating) {
-			Animation animrotate = AnimationUtils.loadAnimation(
-					getApplicationContext(), R.anim.rotate);
-			view.startAnimation(animrotate);
+
+			// Animation animrotate = AnimationUtils.loadAnimation(
+			// getApplicationContext(), R.anim.rotate);
+			// view.startAnimation(animrotate);
 
 			updating = true;
 			new SetIp().execute();

@@ -14,12 +14,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class FragementMain extends Fragment {
+	public static final String TAG = "io.github.zkhan93.sharingtext.GragmentMain";
 	static Context context;
 	public static ViewHolder holder;
 	static SharedPreferences spf;
+	LinearLayout infoView;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -45,6 +48,8 @@ public class FragementMain extends Fragment {
 			holder.text.getText().append(bundle.getString(Intent.EXTRA_TEXT));
 			// send is connected
 		}
+		infoView = (LinearLayout) rootView
+				.findViewById(R.id.linearViewInformation);
 		return rootView;
 	}
 
@@ -52,6 +57,14 @@ public class FragementMain extends Fragment {
 	public void onStart() {
 		super.onStart();
 		new SetIp().execute();
+	}
+
+	public void toggleinfoViewVisibility() {
+		if (infoView != null) {
+			Utility.log(TAG, "info view not null");
+			infoView.setVisibility(infoView.getVisibility() == View.GONE ? View.VISIBLE
+					: View.GONE);
+		}
 	}
 
 	public static class ViewHolder {
@@ -99,11 +112,13 @@ public class FragementMain extends Fragment {
 			int sport = spf.getInt(context.getString(R.string.pref_sport),
 					Constants.DEF_PORT);
 
-			holder.tlocal.setText(context.getString(R.string.textviewlocal)
-					+ Utility.getIpAddress() + Constants.COLON + lport);
-			holder.tserver.setText(context.getString(R.string.textviewserver)
-					+ spf.getString(context.getString(R.string.pref_ip), null)
-					+ Constants.COLON + sport);
+			holder.tlocal.setText(
+			// context.getString(R.string.textviewlocal)+
+					Utility.getIpAddress() + Constants.COLON + lport);
+			holder.tserver.setText(
+			// context.getString(R.string.textviewserver)+
+					spf.getString(context.getString(R.string.pref_ip), null)
+							+ Constants.COLON + sport);
 			MainActivity.updating = false;
 			Log.d("msg", "done ip update");
 			super.onPostExecute(result);
