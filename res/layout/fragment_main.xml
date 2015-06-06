@@ -72,39 +72,6 @@
             android:layout_weight="1" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/linearViewInformation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone" >
-
-        <TextView
-            android:id="@+id/textViewServer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
-            android:background="@drawable/text_background"
-            android:drawableStart="@drawable/ic_server"
-            android:focusable="true"
-            android:gravity="center"
-            android:paddingEnd="10dp"
-            android:text="@string/textviewserver" />
-
-        <TextView
-            android:id="@+id/textViewLocal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
-            android:background="@drawable/text_background"
-            android:drawableStart="@drawable/ic_user"
-            android:focusable="true"
-            android:gravity="center"
-            android:paddingEnd="10dp"
-            android:text="@string/textviewlocal" />
-    </LinearLayout>
-
     <RelativeLayout
         android:id="@+id/relativetextcontainer"
         android:layout_width="match_parent"

@@ -1,6 +1,5 @@
 package io.github.zkhan93.sharingtext;
 
-import io.github.zkhan93.sharingtext.FragementMain.SetIp;
 import io.github.zkhan93.sharingtext.util.Constants;
 import io.github.zkhan93.sharingtext.util.Utility;
 
@@ -18,6 +17,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -34,7 +34,6 @@ public class MainActivity extends ActionBarActivity {
 	static Context context;
 	SharedPreferences spf;
 
-	public static boolean updating;
 	public static ServerSocket ss;
 	// pubic static Socket cs;
 	static boolean CLIENT_CONN;
@@ -47,7 +46,7 @@ public class MainActivity extends ActionBarActivity {
 		Intent intent = this.getIntent();
 		String action = intent.getAction();
 		String type = intent.getType();
-		FragementMain fragment = new FragementMain();
+		FragmentMain fragment = new FragmentMain();
 		if (Intent.ACTION_SEND.equals(action) && type != null) {
 			if ("text/plain".equals(type)) {
 				Bundle bundle = new Bundle();
@@ -58,7 +57,7 @@ public class MainActivity extends ActionBarActivity {
 		}
 		if (savedInstanceState == null) {
 			getSupportFragmentManager().beginTransaction()
-					.replace(R.id.container, fragment, FragementMain.TAG)
+					.replace(R.id.container, fragment, FragmentMain.TAG)
 					.commit();
 		}
 		spf = getSharedPreferences(getString(R.string.pref_filename),
@@ -109,13 +108,12 @@ public class MainActivity extends ActionBarActivity {
 			intent = new Intent();
 			intent.setAction(Intent.ACTION_SEND);
 			intent.setType("text/html|text/plain");
-			intent.putExtra(Intent.EXTRA_TEXT, FragementMain.getText());
+			intent.putExtra(Intent.EXTRA_TEXT, FragmentMain.getText());
 			startActivity(Intent.createChooser(intent, "Share Text via"));
 			return true;
-		case R.id.action_refresh:
-			Utility.log(TAG, "in menu otions");
-			updateIP();
-			return true;
+		case android.R.id.home:
+		    onBackPressed();
+		    return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -195,8 +193,8 @@ public class MainActivity extends ActionBarActivity {
 					}
 				});
 
-				FragementMain.setConnButton(true, true);
-				FragementMain.setSendButton(true);
+				FragmentMain.setConnButton(true, true);
+				FragmentMain.setSendButton(true);
 			} else
 				Toast.makeText(context,
 						context.getString(R.string.toast_conn_error),
@@ -209,12 +207,12 @@ public class MainActivity extends ActionBarActivity {
 			if (s != null && !s.isClosed())
 				s.close();
 			CLIENT_CONN = false;
-			FragementMain.setSendButton(false);
+			FragmentMain.setSendButton(false);
 			if (serverup && !waiting) {
-				FragementMain.setConnButton(false, false);
+				FragmentMain.setConnButton(false, false);
 				new WaitForClient().execute();
 			} else
-				FragementMain.setConnButton(false, true);
+				FragmentMain.setConnButton(false, true);
 			Toast.makeText(context,
 					context.getString(R.string.toast_disconnected),
 					Toast.LENGTH_SHORT).show();
@@ -236,13 +234,19 @@ public class MainActivity extends ActionBarActivity {
 
 	public void showInfo(View view) {
 		Utility.log(TAG, "in show info");
-		FragementMain fragment = (FragementMain) (getSupportFragmentManager()
-				.findFragmentByTag(FragementMain.TAG));
-		fragment.toggleinfoViewVisibility();
+		Fragment fragment = null;
+		fragment = getSupportFragmentManager().findFragmentByTag(
+				FragmentInfo.TAG);
+		if (fragment == null)
+			fragment = new FragmentInfo();
+		getSupportFragmentManager().beginTransaction()
+				.replace(R.id.container, fragment, FragmentInfo.TAG).addToBackStack(FragmentMain.TAG).commit();
+		
+		
 	}
 
 	public void copyText(View view) {
-		String msg = FragementMain.holder.text.getText().toString().trim();
+		String msg = FragmentMain.holder.text.getText().toString().trim();
 		if (msg.length() > 0) {
 			int sdk = android.os.Build.VERSION.SDK_INT;
 			if (sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
@@ -264,31 +268,15 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	public void sendText(View view) {
-		String msg = FragementMain.holder.text.getText().toString().trim();
+		String msg = FragmentMain.holder.text.getText().toString().trim();
 		if (msg.length() > 0) {
 			new sendData(msg).start();
-			FragementMain.holder.text.getText().clear();
+			FragmentMain.holder.text.getText().clear();
 		}
 	}
 
 	public void clearText(View view) {
-		FragementMain.holder.text.getText().clear();
-	}
-
-	public void updateIP() {
-		Utility.log(TAG, "in update ip");
-		if (!updating) {
-
-			// Animation animrotate = AnimationUtils.loadAnimation(
-			// getApplicationContext(), R.anim.rotate);
-			// view.startAnimation(animrotate);
-
-			updating = true;
-			new SetIp().execute();
-		} else {
-			Toast.makeText(getApplicationContext(),
-					getString(R.string.updating), Toast.LENGTH_SHORT).show();
-		}
+		FragmentMain.holder.text.getText().clear();
 	}
 
 	class sendData extends Thread {
@@ -340,7 +328,7 @@ public class MainActivity extends ActionBarActivity {
 		protected void onProgressUpdate(String... values) {
 			Utility.log(TAG, " got text" + values[0]);
 			if (values[0] != null)
-				FragementMain.holder.text.getText().append(values[0] + "\n");
+				FragmentMain.holder.text.getText().append(values[0] + "\n");
 		}
 
 		@Override
@@ -350,8 +338,8 @@ public class MainActivity extends ActionBarActivity {
 			if (serverup) {
 				disconnect();
 			} else {
-				FragementMain.setSendButton(false);
-				FragementMain.setConnButton(false, true);
+				FragmentMain.setSendButton(false);
+				FragmentMain.setConnButton(false, true);
 			}
 			super.onPostExecute(result);
 		}
@@ -382,8 +370,8 @@ public class MainActivity extends ActionBarActivity {
 		@Override
 		protected void onPostExecute(Boolean result) {
 			Utility.log(TAG, "client Connected");
-			FragementMain.setSendButton(true);
-			FragementMain.setConnButton(true, true);
+			FragmentMain.setSendButton(true);
+			FragmentMain.setConnButton(true, true);
 			runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
@@ -419,7 +407,7 @@ public class MainActivity extends ActionBarActivity {
 		@Override
 		protected void onPostExecute(Boolean result) {
 			if (result && !waiting) {
-				FragementMain.setConnButton(false, false);
+				FragmentMain.setConnButton(false, false);
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
@@ -454,8 +442,8 @@ public class MainActivity extends ActionBarActivity {
 
 					@Override
 					public void run() {
-						FragementMain.setSendButton(false);
-						FragementMain.setConnButton(false, true);
+						FragmentMain.setSendButton(false);
+						FragmentMain.setConnButton(false, true);
 
 					}
 				});
