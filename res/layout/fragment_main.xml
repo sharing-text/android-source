@@ -70,6 +70,21 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
+        
+		<ImageButton
+            android:id="@+id/buttonScan"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/btn_back"
+            android:contentDescription="@string/btn_action_scan"
+            android:onClick="scanInfo"
+            android:src="@drawable/ic_action_scan" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+        
     </LinearLayout>
 
     <RelativeLayout

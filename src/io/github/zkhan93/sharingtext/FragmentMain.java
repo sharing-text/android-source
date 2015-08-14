@@ -29,6 +29,7 @@ public class FragmentMain extends Fragment {
 		holder.text = (EditText) rootView.findViewById(R.id.editTextReceived);
 		holder.cbutton = (ImageButton) rootView.findViewById(R.id.buttonCon);
 		holder.sbutton = (ImageButton) rootView.findViewById(R.id.buttonSend);
+		holder.scanbutton = (ImageButton) rootView.findViewById(R.id.buttonScan);
 		setSendButton(MainActivity.CLIENT_CONN);
 
 		setConnButton(MainActivity.CLIENT_CONN,
@@ -53,6 +54,7 @@ public class FragmentMain extends Fragment {
 		EditText text;
 		ImageButton cbutton;
 		ImageButton sbutton;
+		ImageButton scanbutton;
 		// TextView tserver;
 		// TextView tlocal;
 	}
@@ -75,8 +77,10 @@ public class FragmentMain extends Fragment {
 		}
 		if (clickable) {
 			holder.cbutton.setEnabled(true);
+			holder.scanbutton.setEnabled(true);
 		} else {
 			holder.cbutton.setEnabled(false);
+			holder.scanbutton.setEnabled(true);
 		}
 	}
 

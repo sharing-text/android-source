@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -25,6 +26,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
+
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 public class MainActivity extends ActionBarActivity {
 	public static String TAG = "io.github.zkhan93.sharingtext.main.MainActivity";
@@ -112,8 +116,8 @@ public class MainActivity extends ActionBarActivity {
 			startActivity(Intent.createChooser(intent, "Share Text via"));
 			return true;
 		case android.R.id.home:
-		    onBackPressed();
-		    return true;
+			onBackPressed();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -224,12 +228,33 @@ public class MainActivity extends ActionBarActivity {
 	}
 
 	public void setConnection(View view) {
+		setConnection();
+	}
+	public void setConnection(){
 		if (CLIENT_CONN) {
 			new sendData(null).start();
 		} else {
 			new ConnectToServer().execute();
 		}
+	}
 
+	public void scanInfo(View view) {
+		IntentIntegrator scanIntegrator = new IntentIntegrator(this);
+		scanIntegrator.initiateScan();
+	}
+
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		if (resultCode == Activity.RESULT_OK) {
+			IntentResult scanningResult = IntentIntegrator.parseActivityResult(
+					requestCode, resultCode, intent);
+			String[] scanContent = scanningResult.getContents().split(":");
+			Toast.makeText(getApplicationContext(), "ip-"+scanContent[0]+"\n port-"+scanContent[1], Toast.LENGTH_SHORT).show();
+			//set IP and PORT server
+			String ipkey=getString(R.string.pref_ip);
+			String portkey=getString(R.string.pref_port);
+			spf.edit().remove(ipkey).remove(portkey).putString(ipkey, scanContent[0]).putString(portkey, scanContent[1]);
+			setConnection();
+		}
 	}
 
 	public void showInfo(View view) {
@@ -240,9 +265,9 @@ public class MainActivity extends ActionBarActivity {
 		if (fragment == null)
 			fragment = new FragmentInfo();
 		getSupportFragmentManager().beginTransaction()
-				.replace(R.id.container, fragment, FragmentInfo.TAG).addToBackStack(FragmentMain.TAG).commit();
-		
-		
+				.replace(R.id.container, fragment, FragmentInfo.TAG)
+				.addToBackStack(FragmentMain.TAG).commit();
+
 	}
 
 	public void copyText(View view) {

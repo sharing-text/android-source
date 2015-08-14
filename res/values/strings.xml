@@ -13,6 +13,7 @@
     <string name="btn_action_clear">Clear Text</string>
     <string name="btn_action_send">Send Text</string>
     <string name="btn_action_copy">Copy Text</string>
+    <string name="btn_action_scan">Scan Code</string>
     
     <!-- Preference Title -->
     <string name="pref_ip_title">Server IP Address</string>

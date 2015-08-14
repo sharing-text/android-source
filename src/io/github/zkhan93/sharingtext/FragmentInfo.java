@@ -28,6 +28,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+
 public class FragmentInfo extends Fragment {
 	TextView tlocal, tserver;
 	static SharedPreferences spf;
